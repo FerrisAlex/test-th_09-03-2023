@@ -1,0 +1,47 @@
+use test_th;
+
+create table categoria(
+id int auto_increment,
+nombre varchar(100) not null,
+primary key(id)
+);
+
+select * from categoria;
+
+create table departamento(
+	id int auto_increment,
+    nombre varchar(100) not null,
+    primary key(id)
+);
+
+select * from departamento;
+
+create table categoria_producto(
+	id int auto_increment,
+    categoria_id int,
+    descripcion varchar(100),
+    primary key(id),
+    foreign key(categoria_id)
+    references categoria(id) on delete cascade
+);
+
+drop table categoria_producto;
+
+create table sucursal(
+	id int auto_increment,
+    direccion varchar(100),
+    correo varchar(100),
+    departamento int,
+    municipio int,
+    telefono varchar(20),
+    primary key(id)
+);
+
+create table municipio(
+	id int auto_increment,
+    depto_id int,
+    nombre varchar(100),
+    primary key(id),
+    foreign key(depto_id)
+    references departamento(id) on delete cascade
+);
