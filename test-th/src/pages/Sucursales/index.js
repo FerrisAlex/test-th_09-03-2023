@@ -8,7 +8,13 @@ const Sucursales = () => {
   });
 
   const getData = async () => {
-    const data = await getAllDataSucursal();
+    //const data = await getAllDataSucursal();
+    const data = await fetch(
+      "http://localhost:3001/getSucursales",
+      {
+        method: "GET",
+      }
+    );
     console.log(data, "DATA ------------")
     setState({...state, data: data});
   };
