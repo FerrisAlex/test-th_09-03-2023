@@ -92,7 +92,7 @@ module.exports = (app) => {
     // ----------------------------------- SUCURSALES --------------------------
 
     app.get('/getSucursales', (req, res) => {
-      let query = 'select su.id, su.direccion, su.correo, d.nombre as departamento, m.nombre as municipio, su.telefono from sucursal as su, departamento as d, municipio as m where su.departamento = d.id and su.municipio = m.id;';
+      let query = 'select su.id, su.direccion, su.correo, su.departamento as departamento_id, su.municipio as municipio_id, d.nombre as departamento, m.nombre as municipio, su.telefono from sucursal as su, departamento as d, municipio as m where su.departamento = d.id and su.municipio = m.id;';
       conn.query(query, (error, datos) => {
           if(error) {
               res.json({status: 0, error: error, mensaje: 'Error al consultar'});

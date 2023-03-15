@@ -16,10 +16,10 @@ const CustomModal = (props) => {
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        {props.form}
+        {props.body}
       </Modal.Body>
       <Modal.Footer>
-        <Button onClick={props.onHide}>Close</Button>
+        {props.footer}
       </Modal.Footer>
     </Modal>
   );

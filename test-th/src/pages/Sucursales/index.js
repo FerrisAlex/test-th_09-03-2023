@@ -5,6 +5,7 @@ import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
+import { Trash, Pencil } from 'react-bootstrap-icons';
 
 import { getAllDataSucursal, getDeptoById, getMuniById } from "../../data";
 import CustomModal from "../../components/Modal";
@@ -13,8 +14,14 @@ import SucursalForm from "./addSucursalForm";
 const Sucursales = () => {
   const [state, setState] = useState({
     data: [],
-    showModal: false,
+    isEdit: false,
+    isDelete: false,
+    modalTitle: 'Agregar Sucursal',
+    modalBody: null,
+    modalFooter: null,
   });
+
+  const [showModal, setShowModal] = useState(false);
 
   const getData = async () => {
     //const data = await getAllDataSucursal();
@@ -28,8 +35,86 @@ const Sucursales = () => {
     setState({...state, data: jsonParsed.data});
   };
 
+  const deleteSucursal = async(id) => {
+    const body = {
+      idSucursal: id
+    }
+    const data = await fetch(
+      "http://localhost:3001/deleteSucursal",
+      {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      }
+    ).then(res => {
+      return res.json();
+    }).then(dataResponse => {
+      if(dataResponse.status === 1) {
+        handleShowModal(false);
+      }
+      alert(dataResponse.mensaje);
+    });
+  }
+
   const handleShowModal = (show) => {
-    setState({...state, showModal: show});
+    setShowModal(show);
+    if(!show) {
+      getData();
+    }
+  }
+
+  const onAddItem = () => {
+    setState({
+      ...state,
+      isEdit: false,
+      modalTitle: "Agregar Sucursal",
+      modalBody: (
+        <SucursalForm onHide={() => handleShowModal(false)} isEdit={false} />
+      ),
+      modalFooter: null,
+    });
+
+    handleShowModal(true);
+  }
+
+  const onEditItem = (item) => {
+    setState({
+      ...state,
+      isEdit: true,
+      modalTitle: "Editar Sucursal",
+      modalBody: (
+        <SucursalForm onHide={() => handleShowModal(false)} isEdit={true} item={item} />
+      ),
+      modalFooter: null,
+    });
+
+    handleShowModal(true);
+  }
+
+  const onDeleteItem = (item) => {
+    setState({
+      ...state,
+      isDelete: true,
+      modalTitle: "Eliminar Sucursal",
+      modalBody: (
+        <div>
+          <p>¿Estás seguro que deseas eliminar este dato?</p>{" "}
+          <p><span>ID:</span>{` ${item.id}`}</p>
+          <p>{`${item.direccion}, ${item.departamento}, ${item.municipio}`}</p>
+        </div>
+      ),
+      modalFooter: (
+        <>
+          <Button variant="danger" onClick={() => deleteSucursal(item.id)}>
+            Eliminar
+          </Button>
+          <Button variant="primary" onClick={() => handleShowModal(false)}>
+            Cancelar
+          </Button>
+        </>
+      ),
+    });
+    handleShowModal(true);
   }
 
   useEffect(() => {
@@ -63,7 +148,7 @@ const Sucursales = () => {
               </Col>
               <Col lg className="sucursal-panel__buttons">
                 <div className="sucursal-panel__add">
-                  <Button onClick={() => handleShowModal(true)} variant="primary">Agregar +</Button>
+                  <Button onClick={() => onAddItem()} variant="primary">Agregar +</Button>
                 </div>
               </Col>
             </Row>
@@ -82,6 +167,7 @@ const Sucursales = () => {
                 <th>Departamento</th>
                 <th>Municipio</th>
                 <th>Teléfono</th>
+                <th>Controls</th>
               </tr>
             </thead>
             <tbody>
@@ -94,6 +180,10 @@ const Sucursales = () => {
                     <td>{item.departamento}</td>
                     <td>{item.municipio}</td>
                     <td>{item.telefono}</td>
+                    <td>
+                    <Button variant="primary" onClick={() => onEditItem(item)}><Pencil color="white" size={12} /></Button>{' '}
+                    <Button variant="danger" onClick={() => onDeleteItem(item)}><Trash color="white" size={12} /></Button>{' '}
+                    </td>
                   </tr>
                 );
               })}
@@ -105,10 +195,11 @@ const Sucursales = () => {
       )}
 
       <CustomModal
-        show={state.showModal}
+        show={showModal}
         onHide={() => handleShowModal(false)}
-        title="Agregar sucursal"
-        form={<SucursalForm/>}
+        title={state.modalTitle}
+        body={state.modalBody}
+        footer={state.modalFooter}
       />
     </div>
   );

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 
-const SucursalForm = () => {
+const SucursalForm = (props) => {
 
   const [state, setState] = useState({
     departamentoData: [],
@@ -12,7 +12,11 @@ const SucursalForm = () => {
     direccion: '',
     correo: '',
     telefono: '',
+    isEdit: false,
   });
+
+  const [deptos, setDeptos] = useState([]);
+  const [muni, setMuni] = useState([]);
 
   const getDataDepartamentos = async() => {
     const data = await fetch(
@@ -23,27 +27,52 @@ const SucursalForm = () => {
     ).then(res => {
       return res.json();
     }).then(dataResponse => {
-      setState({...state, departamentoData: dataResponse.data});
+      setDeptos(dataResponse.data);
     });
-    //const dataParsed = await data.json();
-    //console.log(dataParsed, "DATA PARSED DEPTOS ---------")
+
   }
 
   const getDataMunicipios = async(id) => {
     await fetch(
-      `http://localhost:3001/getMunicipios?id=${id}`,
+      `http://localhost:3001/getMunicipios${id? '?id=' + id : ''}`,
       {
         method: "GET",
       }
     ).then(res => {
       return res.json();
     }).then(dataResponse => {
-      setState({...state, municipioData: dataResponse.data});
+      //setState({...state, municipioData: dataResponse.data});
+      setMuni(dataResponse.data);
     });
   }
 
+  const getDataOnEdit = () => {
+    if (props.isEdit && props.item) {
+      const { item } = props;
+      const {
+        direccion,
+        correo,
+        departamento,
+        departamento_id,
+        municipio,
+        municipio_id,
+        telefono,
+      } = item;
+
+      setState({
+        ...state,
+        direccion: direccion,
+        correo: correo,
+        departamentoIdSelected: departamento_id,
+        municipioIdSelected: municipio_id,
+        telefono: telefono
+      });
+
+      getDataMunicipios(departamento_id);
+    }
+  }
+
   const changeDepto = (id) => {
-    console.log(id)
     setState({...state, departamentoIdSelected: id, municipioIdSelected: null});
     getDataMunicipios(id);
   }
@@ -57,28 +86,40 @@ const SucursalForm = () => {
   }
 
   const submitForm = async() => {
-    console.log(state)
-    if (state.correo && state.direccion && state.departamentoIdSelected && state.telefono) {
+    if (state.correo && state.direccion && state.departamentoIdSelected && state.municipioIdSelected && state.telefono) {
       const body = {
         direccion: state.direccion,
         correo: state.correo,
         departamento: state.departamentoIdSelected,
-        municipio: 1,
+        municipio: state.municipioIdSelected,
         telefono: state.telefono,
       };
 
+      if (props.isEdit) {
+        body.idSucursal = props.item.id;
+      }
+
+      const url = props.isEdit
+        ? `http://localhost:3001/updateSucursal`
+        : `http://localhost:3001/addSucursal`;
+
+      const method = props.isEdit
+        ? "PUT"
+        : "POST";
+
       await fetch(
-        `http://localhost:3001/addSucursal`,
+        url,
         {
-          method: "POST",
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: body
+          method: method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
         }
       ).then(res => {
         return res.json();
       }).then(dataResponse => {
+        if(dataResponse.status === 1) {
+          props.onHide();
+        }
         alert(dataResponse.mensaje);
       });
     } else {
@@ -88,6 +129,7 @@ const SucursalForm = () => {
 
   useEffect(() => {
     getDataDepartamentos();
+    getDataOnEdit()
   }, []);
 
   return(
@@ -110,9 +152,14 @@ const SucursalForm = () => {
 
       <Form.Group className="mb-3" controlId="formBasicDepto">
         <Form.Label>Departamento</Form.Label>
-        <Form.Select onChange={(e) => setState({...state, departamentoIdSelected: e.target.value})} aria-label="Default select example">
+        <Form.Select 
+          aria-label="Default select example"
+          onChange={(e) => {changeDepto(e.target.value);}}
+          disabled={deptos.length === 0}
+          value={state.departamentoIdSelected}
+        >
           <option>Departamento</option>
-          {state.departamentoData.map(item => {
+          {deptos.map(item => {
             return(
               <option key={item.id + item.nombre} value={item.id}>{item.nombre}</option> 
             )
@@ -122,9 +169,14 @@ const SucursalForm = () => {
 
       <Form.Group className="mb-3" controlId="formBasicMuni">
         <Form.Label>Municipio</Form.Label>
-        <Form.Select disabled={!state.departamentoIdSelected} onChange={(e) => setState({...state, municipioIdSelected: e.target.value})} aria-label="Default select example">
+        <Form.Select 
+          disabled={!state.departamentoIdSelected} 
+          onChange={(e) => changeMuni(e.target.value)} 
+          aria-label="Default select example"
+          value={state.municipioIdSelected}
+        >
           <option value={null}>Municipio</option>
-          {state.municipioData.map(item => {
+          {muni.map(item => {
             return(
               <option key={item.id + item.nombre} value={item.id}>{item.nombre}</option> 
             )
