@@ -29,7 +29,6 @@ const SucursalForm = (props) => {
     }).then(dataResponse => {
       setDeptos(dataResponse.data);
     });
-
   }
 
   const getDataMunicipios = async(id) => {

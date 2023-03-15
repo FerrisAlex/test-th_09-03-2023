@@ -1,3 +1,7 @@
+.sucursal-container {
+  padding: 32px;
+}
+
 .title {
   text-align: center;
 }
@@ -16,4 +20,22 @@
 
 .custom-navbar {
   margin-bottom: 24px;
+}
+
+
+
+.categoria-container {
+  padding: 32px;
+}
+
+.categoria-header {
+  margin-bottom: 24px;
+}
+
+.categoria-header__title {
+  margin-bottom: 16px;
+}
+
+.categoria-panel__controls {
+  margin-bottom: 16px;
 }

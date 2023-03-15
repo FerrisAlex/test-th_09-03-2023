@@ -16,7 +16,7 @@ module.exports = (app) => {
     });
 
     app.get('/getCategoria', (req, res) => {
-        let query = 'SELECT id, categoria, descripcion FROM categoria_producto';
+        let query = 'SELECT cp.id, cp.categoria as categoria_id, cp.descripcion, c.nombre as categoria FROM categoria_producto as cp, categoria as c WHERE cp.categoria=c.id';
         conn.query(query, (error, datos) => {
             if(error) {
                 res.json({status: 0, error: error, mensaje: 'Error al consultar'});
