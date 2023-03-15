@@ -5,6 +5,8 @@ const conn = db.createConnection({
     user: 'root',
     password: '',
     database: 'test_th',
+    //socketPath: '/tmp/mysql.sock',
+    //port: 3306
 });
 
 conn.connect(err => {
@@ -14,6 +16,5 @@ conn.connect(err => {
         console.log('Servidor corriendo en Mysql')
     }
 });
-
 
 module.exports = conn;
